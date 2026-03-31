@@ -1,9 +1,13 @@
 const express = require('express')
 const app = express()
+const dotenv = require('dotenv');
+dotenv.config();
 const port = process.env.PORT || 3000
-
+const connectDB = require('./config/db');
+app.use(express.json());
+connectDB();
 app.get('/', (req, res) => {
-    return res.json({"message": "API is running..."});
+    return res.json({message: "API is running..."});
 });
 
 
