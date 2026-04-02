@@ -12,7 +12,8 @@ app.get('/', (req, res) => {
 });
 const authRoutes = require('./routes/authRoutes');
 app.use('/api/auth', authRoutes)
-
+const jobRoutes = require('./routes/jobRoutes');
+app.use('/api/jobs', jobRoutes)
 
 app.get('/api/profile', authMiddleware, (req, res) => {
     res.json({
