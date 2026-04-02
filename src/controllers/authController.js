@@ -1,4 +1,5 @@
 const User = require('../models/User');
+const bcrypt = require("bcryptjs");
 const registerUser = async (req, res) => {
      try{
         const { name, lastName, password, email, role } = req.body;
@@ -7,7 +8,7 @@ const registerUser = async (req, res) => {
         }
 
         if (!lastName) {
-            return res.status(400).json({ message: 'lastname is required' });
+            return res.status(400).json({ message: 'Last name is required' });
         }
 
         if (!password || password.length < 8) {
@@ -21,11 +22,12 @@ const registerUser = async (req, res) => {
         if (existingEmail) {
             return res.status(400).json({ message: 'Email already exists' });
         }
+        const passwordHash = await bcrypt.hash(password, 10);
         await User.create({
             name,
             lastName,
             email,
-            password,
+            password: passwordHash,
             role: "user"
         })
          return res.status(201).json({
