@@ -39,57 +39,88 @@ const createJob = async (req, res) => {
     }
 };
 const getAllJobs = async (req, res) => {
-    try{
+    try {
         let page = parseInt(req.query.page) || 1;
         let limit = parseInt(req.query.limit) || 5;
+
         const search = req.query.search || "";
-        let sort = req.query.sort;
+        const sort = req.query.sort;
+        const location = req.query.location;
+        const minSalary = parseInt(req.query.minSalary);
+        const maxSalary = parseInt(req.query.maxSalary);
+
         let sortOption = { createdAt: -1 };
-        if (sort === "desc" || sort === "new") {
-            sortOption = { createdAt: -1 };
-        } else if (sort === "asc" || sort === "old") {
+
+        if (sort === "asc" || sort === "old") {
             sortOption = { createdAt: 1 };
         } else if (sort === "title") {
             sortOption = { title: 1 };
         }
-        const filter = {
-            $or: [
-                {title: { $regex: search, $options: "i" }},
-                {description: { $regex: search, $options: "i" }}
-            ]
-        };
+
+        let filter = {};
+
+        // 🔍 search
+        if (search) {
+            filter.$or = [
+                { title: { $regex: search, $options: "i" } },
+                { description: { $regex: search, $options: "i" } }
+            ];
+        }
+
+        // 📍 location
+        if (location) {
+            filter.location = { $regex: location, $options: "i" };
+        }
+
+        // 💰 salary
+        if (minSalary || maxSalary) {
+            filter.salary = {};
+
+            if (minSalary) {
+                filter.salary.$gte = minSalary;
+            }
+
+            if (maxSalary) {
+                filter.salary.$lte = maxSalary;
+            }
+        }
+
         if (page < 1) page = 1;
-        if (limit < 1) limit =  5;
+        if (limit < 1) limit = 5;
         if (limit > 20) limit = 20;
+
         const total = await Job.countDocuments(filter);
-        const pages = Math.ceil(total / limit)
+        const pages = Math.ceil(total / limit);
+
         if (page > pages && pages !== 0) {
             page = pages;
         }
-        const skip = (page - 1) * limit;
-        const jobs = await Job.find(
-            filter,
-            "title description salary location company createdAt"
-        ).sort(sortOption).skip(skip).limit(limit).populate('company', 'name email');
 
+        const skip = (page - 1) * limit;
+
+        const jobs = await Job.find(filter)
+            .sort(sortOption)
+            .skip(skip)
+            .limit(limit)
+            .populate('company', 'name email');
 
         return res.status(200).json({
             status: 'success',
-            search: search,
-            page: page,
-            limit: limit,
-            total: total,
-            pages: pages,
-            jobs: jobs
+            search,
+            page,
+            limit,
+            total,
+            pages,
+            jobs
         });
 
-    } catch (err){
+    } catch (err) {
         return res.status(500).json({
             status: 'error',
             message: err.message
-        })
+        });
     }
-}
+};
 module.exports = {
     createJob,
     getAllJobs
