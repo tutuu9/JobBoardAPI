@@ -124,14 +124,14 @@ const getAllJobs = async (req, res) => {
 const updateJob = async (req, res) => {
     try{
         const id = req.params.id;
-        let job = await Job.find(id);
+        let job = await Job.findById(id);
         if (!job) {
             return res.status(404).json({
                 status: 'error',
                 message: 'Job not found'
             });
         }
-        if (!job.company.toString() === req.user._id.toString()){
+        if (job.company.toString() !== req.user._id.toString()){
             return res.status(403).json({
                 status: 'error',
                 message: 'User doesn\'t have permission to update jobs'
@@ -159,14 +159,14 @@ const updateJob = async (req, res) => {
                 runValidators: true
             }
         );
-        return res.status(201).json({
+        return res.status(200).json({
             status: 'success',
-            message: 'Job created successfully',
+            message: 'Job update successfully',
             job
         });
 
     } catch (error){
-        return res.status(400).json({
+        return res.status(500).json({
             status: 'error',
             message: error.message
         })
@@ -174,8 +174,33 @@ const updateJob = async (req, res) => {
 
 }
 const deleteJob = async (req, res) => {
-
-}
+    try {
+        const id = req.params.id;
+        let job = await Job.findById(id);
+        if (!job) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Job not found'
+            });
+        }
+        if (job.company.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                status: 'error',
+                message: "User doesn't have permission to delete jobs"
+            });
+        }
+        await Job.findByIdAndDelete(id);
+        return res.status(200).json({
+            status: 'success',
+            message: 'Job deleted successfully'
+        });
+    } catch (error) {
+        return res.status(500).json({
+            status: 'error',
+            message: error.message
+        });
+    }
+};
 module.exports = {
     createJob,
     getAllJobs,
