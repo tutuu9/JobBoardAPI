@@ -121,7 +121,64 @@ const getAllJobs = async (req, res) => {
         });
     }
 };
+const updateJob = async (req, res) => {
+    try{
+        const id = req.params.id;
+        let job = await Job.find(id);
+        if (!job) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Job not found'
+            });
+        }
+        if (!job.company.toString() === req.user._id.toString()){
+            return res.status(403).json({
+                status: 'error',
+                message: 'User doesn\'t have permission to update jobs'
+            })
+        }
+        const { title, description, salary, location } = req.body;
+
+        if (!title || !description || !salary || !location) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'All fields are required'
+            });
+        }
+        job = await Job.findByIdAndUpdate(
+            id,
+            {
+                title,
+                description,
+                salary,
+                location,
+                company: req.user._id
+            },
+            {
+                new: true,
+                runValidators: true
+            }
+        );
+        return res.status(201).json({
+            status: 'success',
+            message: 'Job created successfully',
+            job
+        });
+
+    } catch (error){
+        return res.status(400).json({
+            status: 'error',
+            message: error.message
+        })
+    }
+
+}
+const deleteJob = async (req, res) => {
+
+}
 module.exports = {
     createJob,
-    getAllJobs
+    getAllJobs,
+    deleteJob,
+    updateJob
 };
