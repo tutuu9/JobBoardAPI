@@ -1,5 +1,5 @@
 const Job = require('../models/Job');
-
+const Application = require('../models/Application');
 const createJob = async (req, res) => {
     try {
         const { title, description, salary, location } = req.body;
@@ -201,9 +201,52 @@ const deleteJob = async (req, res) => {
         });
     }
 };
+const applyToJob = async (req, res) => {
+    try {
+        const job = await Job.findById(req.params.id);
+        const message = req.body.message;
+        if (req.user.role !== 'user') {
+            return res.status(403).json({
+                status: 'error',
+                message: 'Only users can apply to jobs'
+            })
+        }
+        if (!job) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Job not found'
+            })
+        }
+        const existingApplication = await Application.findOne({
+            user: req.user._id,
+            job: req.params.id
+        });
+        if (existingApplication) {
+            return res.status(400).json({
+                status: 'error',
+                message: 'User already applied'
+            })
+        }
+        await Application.create({
+            user: req.user._id,
+            job: job._id,
+            message: message,
+        })
+        return res.status(201).json({
+            status: 'success',
+            message: 'Application created successfully'
+        })
+    } catch (err) {
+        return res.status(500).json({
+            status: 'error',
+            message: err.message
+        })
+    }
+}
 module.exports = {
     createJob,
     getAllJobs,
     deleteJob,
-    updateJob
+    updateJob,
+    applyToJob,
 };
