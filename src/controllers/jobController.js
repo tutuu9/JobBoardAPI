@@ -4,20 +4,30 @@ const createJob = async (req, res) => {
     try {
         const { title, description, salary, location } = req.body;
 
-        if (!title || !description || !salary || !location) {
+        if (!title || !description ||  salary === undefined || !location) {
             return res.status(400).json({
                 status: 'error',
                 message: 'All fields are required'
             });
         }
-
+        if (!title.trim() || !description.trim() || !location.trim()){
+            return res.status(400).json({
+                status: 'error',
+                message: 'All fields are required'
+            })
+        }
+        if( salary <= 0){
+            return res.status(400).json({
+                status: 'error',
+                message: 'Salary must be greater than 0'
+            })
+        }
         if (req.user.role !== 'company') {
             return res.status(403).json({
                 status: 'error',
                 message: "User doesn't have permission to create jobs"
             });
         }
-
         const job = await Job.create({
             title,
             description,
