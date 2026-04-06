@@ -243,10 +243,41 @@ const applyToJob = async (req, res) => {
         })
     }
 }
+const getJobApplications = async (req, res) => {
+    try {
+        const jobId = req.params.id;
+        const job = await Job.findById(jobId);
+        if (!job) {
+            return res.status(404).json({
+                status: 'error',
+                message: 'Job not found'
+            })
+        }
+        if (job.company.toString() !== req.user._id.toString()) {
+            return res.status(403).json({
+                status: 'error',
+                message: 'User doesn\'t have permission'
+            })
+        }
+        const applications = await Application.find({job: jobId}).populate('user', 'name lastName email').sort({createdAt: -1});
+        return res.status(200).json({
+            status: 'success',
+            job: job,
+            count: applications.length,
+            applications: applications
+        })
+    } catch (err) {
+        return res.status(500).json({
+            status: 'error',
+            message: err.message
+        })
+    }
+}
 module.exports = {
     createJob,
     getAllJobs,
     deleteJob,
     updateJob,
     applyToJob,
+    getJobApplications,
 };
