@@ -1,16 +1,24 @@
 {
-  "name": "jobboardapi",
+  "name": "job-board-api",
   "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Backend API for a job board platform built with Node.js, Express and MongoDB.",
+  "main": "src/server.js",
   "scripts": {
-    "dev": "nodemon src/server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/server.js",
+    "dev": "nodemon src/server.js"
   },
-  "private": true,
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "keywords": [
+    "nodejs",
+    "express",
+    "mongodb",
+    "mongoose",
+    "jwt",
+    "rest-api",
+    "backend",
+    "job-board"
+  ],
+  "author": "Taras Uzun",
+  "license": "MIT",
   "type": "commonjs",
   "dependencies": {
     "bcryptjs": "^3.0.3",
